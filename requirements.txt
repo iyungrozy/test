@@ -1,18 +1,18 @@
 # Core packages yang wajib
-Flask==2.2.3
-Flask-SQLAlchemy==3.0.3
-python-Levenshtein==0.21.0
-mysql-connector-python==8.0.33
+Flask>=2.2.3
+Flask-SQLAlchemy>=3.0.3
+python-Levenshtein>=0.21.0
+mysql-connector-python>=8.0.33
 
 # NLP packages
-nltk==3.8.1
-numpy==1.24.3
+nltk>=3.8.1
+numpy>=2.2.0
 
 # Data handling
-pandas==2.0.1
-openpyxl==3.1.2
+pandas>=2.0.1
+openpyxl>=3.1.2
 
-# Machine learning - versi CPU untuk menghemat ukuran download
-torch==2.0.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-transformers==4.29.2
-distutils
+# Machine learning
+torch>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
+transformers>=4.29.2
+# distutils is a standard library module, not a pip package
