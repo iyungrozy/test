@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Database Setup{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Konfigurasi Database MySQL</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Silakan masukkan detail koneksi database MySQL Anda.
+                    Database akan dibuat otomatis jika belum ada.
+                </div>
+                
+                <form method="POST" action="{{ url_for('setup') }}">
+                    <div class="mb-3">
+                        <label for="host" class="form-label">Host</label>
+                        <input type="text" class="form-control" id="host" name="host" placeholder="localhost" value="localhost" required>
+                        <small class="text-muted">Alamat server MySQL</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="port" class="form-label">Port</label>
+                        <input type="number" class="form-control" id="port" name="port" placeholder="3306" value="3306" required>
+                        <small class="text-muted">Port MySQL (biasanya 3306)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="user" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="user" name="user" placeholder="root" value="root" required>
+                        <small class="text-muted">Username MySQL</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                        <small class="text-muted">Password MySQL (kosongkan jika tidak ada)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="database" class="form-label">Nama Database</label>
+                        <input type="text" class="form-control" id="database" name="database" placeholder="sistem_penilaian" value="sistem_penilaian" required>
+                        <small class="text-muted">Nama database (akan dibuat jika belum ada)</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-database"></i> Konfigurasi Database
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_extra %}
+<script>
+// Add custom handling for the setup form
+document.querySelector('form').addEventListener('submit', function() {
+    showLoading('Menyambungkan ke database...');
+    
+    // Simulate three setup phases
+    setTimeout(() => {
+        updateProgress(30, 'Mencoba koneksi...');
+        
+        setTimeout(() => {
+            updateProgress(60, 'Membuat database jika belum ada...');
+            
+            setTimeout(() => {
+                updateProgress(90, 'Membuat tabel-tabel...');
+            }, 1000);
+        }, 1500);
+    }, 1000);
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,221 @@
+{% extends "base_siswa.html" %}
+
+{% block title %}Ujian Essai{% endblock %}
+
+{% block head_extra %}
+<style>
+  .question-card {
+    @apply mb-6 transition-all duration-200 hover:shadow-md;
+  }
+  
+  .answer-area {
+    @apply min-h-[120px] resize-y;
+  }
+  
+  .result-score {
+    @apply text-6xl font-bold text-center my-8;
+  }
+  
+  .animate-score {
+    animation: countUp 2s ease-out forwards;
+  }
+  
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if show_result %}
+<div class="max-w-3xl mx-auto">
+  <!-- Results display -->
+  <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <h2 class="text-xl font-bold text-gray-800">Hasil Penilaian</h2>
+    </div>
+    
+    <div class="px-6 py-6">
+      <div class="text-center">
+        <h3 class="text-lg font-medium text-gray-700">Nilai Akhir</h3>
+        <div class="result-score animate-score" id="finalScore">{{ nilai_akhir|round(2) }}</div>
+        
+        {% if status == "Lulus" %}
+        <span class="inline-flex items-center px-4 py-2 rounded-full text-lg font-medium bg-green-100 text-green-800">
+          <i class="fas fa-check-circle mr-2"></i> {{ status }}
+        </span>
+        {% else %}
+        <span class="inline-flex items-center px-4 py-2 rounded-full text-lg font-medium bg-red-100 text-red-800">
+          <i class="fas fa-times-circle mr-2"></i> {{ status }}
+        </span>
+        {% endif %}
+      </div>
+      
+      <div class="mt-8">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">Detail Jawaban</h3>
+        
+        <div class="space-y-6">
+          {% for jawaban in jawaban_detail %}
+          <div class="bg-gray-50 rounded-lg shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+              <span class="font-medium">Soal #{{ loop.index }}</span>
+              <span class="px-3 py-1 rounded-full text-sm font-medium 
+                {% if jawaban.status_akhir == 'Lulus' %}
+                bg-green-100 text-green-800
+                {% else %}
+                bg-red-100 text-red-800
+                {% endif %}
+              ">
+                {{ jawaban.skor_akhir|round(2) }}
+              </span>
+            </div>
+            
+            <div class="p-4">
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700">Pertanyaan:</h4>
+                <p class="mt-1 text-gray-800">{{ jawaban.soal.pertanyaan }}</p>
+              </div>
+              
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700">Jawaban Anda:</h4>
+                <p class="mt-1 text-gray-800 bg-white p-3 rounded border border-gray-200">{{ jawaban.jawaban_siswa }}</p>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-4 mt-4">
+                <div class="bg-blue-50 p-3 rounded text-center">
+                  <div class="text-lg font-medium text-blue-800">{{ jawaban.skor_semantik|round(2) }}</div>
+                  <div class="text-xs font-medium text-blue-500">Skor Semantik</div>
+                </div>
+                <div class="bg-purple-50 p-3 rounded text-center">
+                  <div class="text-lg font-medium text-purple-800">{{ jawaban.skor_sintaksis|round(2) }}</div>
+                  <div class="text-xs font-medium text-purple-500">Skor Sintaksis</div>
+                </div>
+                <div class="bg-indigo-50 p-3 rounded text-center">
+                  <div class="text-lg font-medium text-indigo-800">{{ jawaban.skor_akhir|round(2) }}</div>
+                  <div class="text-xs font-medium text-indigo-500">Skor Akhir</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="max-w-4xl mx-auto">
+  <!-- Exam questions -->
+  <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <h2 class="text-xl font-bold text-gray-800">Ujian Essai</h2>
+    </div>
+    
+    <div class="px-6 py-6">
+      <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-blue-400"></i>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-blue-700">
+              Jawablah semua pertanyaan dengan baik dan benar. Sistem akan menilai jawaban Anda berdasarkan kemiripan semantik dan sintaksis dengan kunci jawaban.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <form method="POST" action="{{ url_for('submit') }}" id="ujianForm" class="space-y-6">
+        {% for s in soal %}
+        <div class="question-card bg-gray-50 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
+            <h3 class="font-medium text-gray-800">Soal #{{ loop.index }}</h3>
+          </div>
+          
+          <div class="p-4">
+            <p class="mb-4 text-gray-800">{{ s.pertanyaan }}</p>
+            <div>
+              <label for="jawaban_{{ s.id }}" class="block text-sm font-medium text-gray-700">Jawaban:</label>
+              <textarea 
+                class="mt-1 answer-area block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-3 border"
+                id="jawaban_{{ s.id }}" 
+                name="jawaban_{{ s.id }}" 
+                placeholder="Tulis jawaban Anda di sini..."
+                required
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        
+        <div class="pt-4">
+          <button type="submit" class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-paper-plane mr-2"></i> Kumpulkan Jawaban
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block body_extra %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle form submission with detailed loading progress
+  const ujianForm = document.getElementById('ujianForm');
+  
+  if (ujianForm) {
+    ujianForm.addEventListener('submit', function() {
+      showLoading('Memulai evaluasi jawaban...');
+      
+      // Simulate evaluation stages
+      setTimeout(() => {
+        updateProgress(20, 'Menganalisis jawaban...');
+        
+        setTimeout(() => {
+          updateProgress(40, 'Menghitung skor semantik...');
+          
+          setTimeout(() => {
+            updateProgress(60, 'Menghitung skor sintaksis...');
+            
+            setTimeout(() => {
+              updateProgress(80, 'Menentukan skor akhir...');
+            }, 1500);
+          }, 1500);
+        }, 1500);
+      }, 1000);
+    });
+    
+    // Auto-resize textareas as user types
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+      textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      });
+    });
+  }
+  
+  // Animate score counter if result page
+  const finalScore = document.getElementById('finalScore');
+  if (finalScore) {
+    const score = parseFloat(finalScore.textContent);
+    finalScore.textContent = '0';
+    
+    let start = 0;
+    const duration = 1500;
+    const interval = setInterval(() => {
+      start += score / (duration / 30);
+      finalScore.textContent = Math.min(start, score).toFixed(2);
+      
+      if (start >= score) {
+        clearInterval(interval);
+      }
+    }, 30);
+  }
+});
+</script>
+{% endblock %}

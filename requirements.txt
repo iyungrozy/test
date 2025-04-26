@@ -1,0 +1,14 @@
+Flask
+Flask-SQLAlchemy
+python-Levenshtein
+transformers
+torch
+numpy
+nltk
+pandas
+xlrd
+openpyxl
+XlsxWriter
+mysql-connector-python
+scikit-learn
+matplotlib

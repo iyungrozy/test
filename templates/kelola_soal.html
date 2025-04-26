@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Kelola Soal{% endblock %}
+
+{% block head_extra %}
+<style>
+  .question-card {
+    @apply bg-white shadow-sm rounded-lg overflow-hidden mb-6 hover:shadow-md transition-all duration-200;
+  }
+  
+  .question-text {
+    @apply whitespace-pre-line;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="{ 
+    showAddModal: false, 
+    showEditModal: false,
+    showImportModal: false,
+    questionId: null,
+    pertanyaan: '',
+    kunci: '',
+    searchQuery: ''
+  }">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">
+      <i class="fas fa-question-circle mr-2 text-primary-500"></i> Kelola Soal
+    </h1>
+    <div class="flex flex-wrap gap-2">
+      <button @click="showAddModal = true" type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        <i class="fas fa-plus mr-2"></i> Tambah Soal
+      </button>
+      <button @click="showImportModal = true" type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        <i class="fas fa-file-import mr-2"></i> Import
+      </button>
+      <a href="{{ url_for('export_soal') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500" data-loading="true" data-loading-message="Mengekspor soal...">
+        <i class="fas fa-file-export mr-2"></i> Export
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+    <div class="border-b border-gray-200 bg-primary-600 px-4 py-4 sm:px-6">
+      <h2 class="text-xl font-medium text-white">Daftar Soal ({{ soal|length }})</h2>
+    </div>
+    
+    <div class="px-4 py-5 sm:p-6">
+      <!-- Search box -->
+      <div class="mb-6">
+        <div class="mt-1 relative rounded-md shadow-sm">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+          <input x-model="searchQuery" type="text" 
+                class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
+                placeholder="Cari soal...">
+        </div>
+      </div>
+      
+      <!-- Questions list -->
+      <div class="space-y-6">
+        {% if soal %}
+          {% for s in soal %}
+          <div class="question-card" 
+               x-data="{ questionText: '{{ s.pertanyaan|lower }}' }"
+               x-show="questionText.includes(searchQuery.toLowerCase()) || searchQuery === ''">
+            <div class="border-b border-gray-200 px-4 py-4 bg-gray-50">
+              <div class="flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Soal #{{ loop.index }}</h3>
+                <div class="flex items-center space-x-2">
+                  <button type="button" @click="
+                      showEditModal = true;
+                      questionId = {{ s.id }};
+                      pertanyaan = `{{ s.pertanyaan }}`;
+                      kunci = `{{ s.kunci_jawaban }}`;
+                    " 
+                    class="inline-flex items-center px-2.5 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </button>
+                  <a href="{{ url_for('hapus_soal', id=s.id) }}" 
+                    class="inline-flex items-center px-2.5 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    onclick="return confirm('Apakah Anda yakin ingin menghapus soal ini?');"
+                    data-loading="true" data-loading-message="Menghapus soal...">
+                    <i class="fas fa-trash mr-1"></i> Hapus
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="px-4 py-5 sm:p-6">
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700">Pertanyaan:</h4>
+                <p class="mt-2 text-gray-800 question-text">{{ s.pertanyaan }}</p>
+              </div>
+              <div>
+                <h4 class="text-sm font-medium text-gray-700">Kunci Jawaban:</h4>
+                <p class="mt-2 text-gray-800 question-text">{{ s.kunci_jawaban }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">Belum ada soal yang tersedia. Silakan tambahkan soal baru.</p>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Question Modal -->
+  <div x-show="showAddModal" 
+      class="fixed inset-0 overflow-y-auto z-50" 
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showAddModal = false"></div>
+
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div class="bg-primary-600 px-4 py-4 sm:px-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg leading-6 font-medium text-white">
+              Tambah Soal Baru
+            </h3>
+            <button @click="showAddModal = false" type="button" class="text-white hover:text-gray-200 focus:outline-none">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <form id="addQuestionForm" action="{{ url_for('tambah_soal') }}" method="post">
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+            <div class="space-y-4">
+              <div>
+                <label for="pertanyaan" class="block text-sm font-medium text-gray-700">Pertanyaan</label>
+                <div class="mt-1">
+                  <textarea id="pertanyaan" name="pertanyaan" rows="4" required
+                    class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[120px]"></textarea>
+                </div>
+              </div>
+              
+              <div>
+                <label for="kunci_jawaban" class="block text-sm font-medium text-gray-700">Kunci Jawaban</label>
+                <div class="mt-1">
+                  <textarea id="kunci_jawaban" name="kunci_jawaban" rows="6" required
+                    class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[150px]"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+              <i class="fas fa-save mr-2"></i> Simpan Soal
+            </button>
+            <button @click="showAddModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+              Batal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Question Modal -->
+  <div x-show="showEditModal" 
+      class="fixed inset-0 overflow-y-auto z-50" 
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showEditModal = false"></div>
+
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div class="bg-primary-600 px-4 py-4 sm:px-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg leading-6 font-medium text-white">
+              Edit Soal
+            </h3>
+            <button @click="showEditModal = false" type="button" class="text-white hover:text-gray-200 focus:outline-none">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <form x-ref="editForm" :action="'{{ url_for('edit_soal', id=0) }}'.replace('0', questionId)" method="post">
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+            <div class="space-y-4">
+              <div>
+                <label for="edit_pertanyaan" class="block text-sm font-medium text-gray-700">Pertanyaan</label>
+                <div class="mt-1">
+                  <textarea x-model="pertanyaan" id="edit_pertanyaan" name="pertanyaan" rows="4" required
+                    class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[120px]"></textarea>
+                </div>
+              </div>
+              
+              <div>
+                <label for="edit_kunci_jawaban" class="block text-sm font-medium text-gray-700">Kunci Jawaban</label>
+                <div class="mt-1">
+                  <textarea x-model="kunci" id="edit_kunci_jawaban" name="kunci_jawaban" rows="6" required
+                    class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[150px]"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+              <i class="fas fa-save mr-2"></i> Simpan Perubahan
+            </button>
+            <button @click="showEditModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+              Batal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div x-show="showImportModal" 
+      class="fixed inset-0 overflow-y-auto z-50" 
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showImportModal = false"></div>
+
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-primary-600 px-4 py-4 sm:px-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg leading-6 font-medium text-white">
+              Import Soal
+            </h3>
+            <button @click="showImportModal = false" type="button" class="text-white hover:text-gray-200 focus:outline-none">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <form action="{{ url_for('import_soal') }}" method="post" enctype="multipart/form-data">
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+            <div>
+              <label for="file" class="block text-sm font-medium text-gray-700">File Excel (.xlsx)</label>
+              <div class="mt-1">
+                <input type="file" id="file" name="file" accept=".xlsx" required
+                  class="focus:ring-primary-500 focus:border-primary-500 block w-full text-sm border-gray-300 rounded-md">
+              </div>
+              <p class="mt-2 text-sm text-gray-500">
+                Pastikan format file sesuai. 
+                <a href="{{ url_for('download_template') }}" class="text-primary-600 hover:text-primary-500">
+                  Download template <i class="fas fa-download"></i>
+                </a>
+              </p>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+              <i class="fas fa-upload mr-2"></i> Import
+            </button>
+            <button @click="showImportModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+              Batal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_extra %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Add loading indicator for form submission
+  document.getElementById('addQuestionForm')?.addEventListener('submit', function() {
+    showLoading('Menyimpan soal baru...');
+    updateProgress(50);
+  });
+});
+</script>
+{% endblock %} 

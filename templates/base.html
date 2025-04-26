@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistem Penilaian Essai{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#172554',
+                        },
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                    }
+                },
+            },
+        }
+    </script>
+    <style type="text/css">
+        [x-cloak] { display: none !important; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="h-full" x-data="{ mobileMenuOpen: false }">
+    <!-- Loading overlay with progress -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="relative">
+            <div class="h-16 w-16 rounded-full border-4 border-primary-200 border-t-primary-600 animate-spin"></div>
+        </div>
+        <p class="mt-4 font-semibold text-gray-700" id="loadingText">Memproses...</p>
+        <div class="mt-4 w-64 bg-gray-200 rounded-full h-2.5">
+            <div class="bg-primary-600 h-2.5 rounded-full transition-all duration-300" id="loadingProgress" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Navigation if user is logged in -->
+    {% if session.get('user_id') %}
+    <div class="min-h-full">
+        <nav class="bg-primary-600 shadow-md">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 justify-between">
+                    <div class="flex">
+                        <div class="flex flex-shrink-0 items-center">
+                            <span class="text-white text-xl font-bold">Sistem Penilaian Essai</span>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            {% if session.get('user_role') == 'admin' %}
+                            <a href="{{ url_for('admin_dashboard') }}" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-white hover:text-gray-200">
+                                <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                            </a>
+                            <a href="{{ url_for('kelola_soal') }}" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-white hover:text-gray-200">
+                                <i class="fas fa-question-circle mr-1"></i> Kelola Soal
+                            </a>
+                            <a href="{{ url_for('kelola_user') }}" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-white hover:text-gray-200">
+                                <i class="fas fa-users mr-1"></i> Kelola User
+                            </a>
+                            {% elif session.get('user_role') == 'siswa' %}
+                            <a href="{{ url_for('siswa') }}" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-white hover:text-gray-200">
+                                <i class="fas fa-book mr-1"></i> Dashboard Siswa
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                        <div class="text-white mr-4">
+                            <i class="fas fa-user mr-1"></i> {{ session.get('username') }}
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-primary-700 shadow-sm hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </a>
+                    </div>
+                    
+                    <!-- Mobile menu button -->
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-primary-700 focus:outline-none" aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu, show/hide based on menu state -->
+            <div x-show="mobileMenuOpen" class="sm:hidden" id="mobile-menu">
+                <div class="space-y-1 pb-3 pt-2">
+                    {% if session.get('user_role') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-white hover:bg-primary-700">
+                        <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('kelola_soal') }}" class="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-white hover:bg-primary-700">
+                        <i class="fas fa-question-circle mr-1"></i> Kelola Soal
+                    </a>
+                    <a href="{{ url_for('kelola_user') }}" class="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-white hover:bg-primary-700">
+                        <i class="fas fa-users mr-1"></i> Kelola User
+                    </a>
+                    {% elif session.get('user_role') == 'siswa' %}
+                    <a href="{{ url_for('siswa') }}" class="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-white hover:bg-primary-700">
+                        <i class="fas fa-book mr-1"></i> Dashboard Siswa
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="border-t border-primary-700 pb-3 pt-4">
+                    <div class="flex items-center px-4">
+                        <div class="text-base font-medium text-white">
+                            <i class="fas fa-user mr-1"></i> {{ session.get('username') }}
+                        </div>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-base font-medium text-white hover:bg-primary-700">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+    {% endif %}
+
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'error' %}
+                        <div class="rounded-md bg-red-50 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-red-800">{{ message }}</p>
+                                </div>
+                                <div class="ml-auto pl-3">
+                                    <div class="-mx-1.5 -my-1.5">
+                                        <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="inline-flex rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100">
+                                            <span class="sr-only">Dismiss</span>
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif category == 'success' %}
+                        <div class="rounded-md bg-green-50 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-green-800">{{ message }}</p>
+                                </div>
+                                <div class="ml-auto pl-3">
+                                    <div class="-mx-1.5 -my-1.5">
+                                        <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100">
+                                            <span class="sr-only">Dismiss</span>
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="rounded-md bg-blue-50 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-blue-800">{{ message }}</p>
+                                </div>
+                                <div class="ml-auto pl-3">
+                                    <div class="-mx-1.5 -my-1.5">
+                                        <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="inline-flex rounded-md bg-blue-50 p-1.5 text-blue-500 hover:bg-blue-100">
+                                            <span class="sr-only">Dismiss</span>
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Main content -->
+        <div class="fade-in">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <script>
+        // Loading overlay functions
+        function showLoading(message = 'Memproses...') {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingProgress').style.width = '0%';
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function updateProgress(percent, message = null) {
+            document.getElementById('loadingProgress').style.width = percent + '%';
+            if (message) {
+                document.getElementById('loadingText').textContent = message;
+            }
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        // Add loading indicators to forms
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading for form submissions
+            const forms = document.querySelectorAll('form:not(.no-loading)');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    let loadingMsg = 'Memproses...';
+                    
+                    // Check form action to customize loading message
+                    if (form.action.includes('setup')) {
+                        loadingMsg = 'Mengkonfigurasi database...';
+                        simulateProgressForLongOperation();
+                    } else if (form.action.includes('submit')) {
+                        loadingMsg = 'Mengevaluasi jawaban...';
+                        simulateProgressForLongOperation(15);
+                    } else if (form.action.includes('import')) {
+                        loadingMsg = 'Mengimpor data...';
+                        simulateProgressForLongOperation();
+                    }
+                    
+                    showLoading(loadingMsg);
+                });
+            });
+            
+            // Add loading for links that might need it
+            const actionLinks = document.querySelectorAll('a[data-loading="true"]');
+            actionLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    showLoading(link.getAttribute('data-loading-message') || 'Memproses...');
+                });
+            });
+        });
+        
+        // Simulate progress for operations that might take time
+        function simulateProgressForLongOperation(maxSeconds = 10) {
+            let progress = 0;
+            const interval = setInterval(function() {
+                // Increment slower as we approach 90%
+                if (progress < 30) {
+                    progress += 5;
+                } else if (progress < 60) {
+                    progress += 3;
+                } else if (progress < 90) {
+                    progress += 1;
+                }
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+                
+                updateProgress(progress);
+            }, maxSeconds * 10); // Distribute updates over the maxSeconds
+        }
+    </script>
+    {% block body_extra %}{% endblock %}
+</body>
+</html> 
