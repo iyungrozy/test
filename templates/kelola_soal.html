@@ -3,15 +3,15 @@
 {% block title %}Kelola Soal{% endblock %}
 
 {% block head_extra %}
-<style>
+    <style>
   .question-card {
     @apply bg-white shadow-sm rounded-lg overflow-hidden mb-6 hover:shadow-md transition-all duration-200;
   }
   
   .question-text {
     @apply whitespace-pre-line;
-  }
-</style>
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -57,8 +57,8 @@
                 class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
                 placeholder="Cari soal...">
         </div>
-      </div>
-      
+    </div>
+
       <!-- Questions list -->
       <div class="space-y-6">
         {% if soal %}
@@ -78,7 +78,7 @@
                     " 
                     class="inline-flex items-center px-2.5 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                     <i class="fas fa-edit mr-1"></i> Edit
-                  </button>
+                    </button>
                   <a href="{{ url_for('hapus_soal', id=s.id) }}" 
                     class="inline-flex items-center px-2.5 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                     onclick="return confirm('Apakah Anda yakin ingin menghapus soal ini?');"
@@ -96,19 +96,19 @@
               <div>
                 <h4 class="text-sm font-medium text-gray-700">Kunci Jawaban:</h4>
                 <p class="mt-2 text-gray-800 question-text">{{ s.kunci_jawaban }}</p>
-              </div>
+                </div>
             </div>
-          </div>
-          {% endfor %}
+                        </div>
+                    {% endfor %}
         {% else %}
           <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
             <div class="flex">
               <div class="flex-shrink-0">
                 <i class="fas fa-info-circle text-blue-400"></i>
-              </div>
+                    </div>
               <div class="ml-3">
                 <p class="text-sm text-blue-700">Belum ada soal yang tersedia. Silakan tambahkan soal baru.</p>
-              </div>
+                </div>
             </div>
           </div>
         {% endif %}
@@ -147,18 +147,18 @@
                 <div class="mt-1">
                   <textarea id="pertanyaan" name="pertanyaan" rows="4" required
                     class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[120px]"></textarea>
-                </div>
-              </div>
-              
+        </div>
+    </div>
+
               <div>
                 <label for="kunci_jawaban" class="block text-sm font-medium text-gray-700">Kunci Jawaban</label>
                 <div class="mt-1">
                   <textarea id="kunci_jawaban" name="kunci_jawaban" rows="6" required
                     class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[150px]"></textarea>
                 </div>
-              </div>
-            </div>
-          </div>
+                        </div>
+                        </div>
+                    </div>
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
               <i class="fas fa-save mr-2"></i> Simpan Soal
@@ -166,11 +166,11 @@
             <button @click="showAddModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
               Batal
             </button>
-          </div>
-        </form>
-      </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
   <!-- Edit Question Modal -->
   <div x-show="showEditModal" 
@@ -212,9 +212,9 @@
                   <textarea x-model="kunci" id="edit_kunci_jawaban" name="kunci_jawaban" rows="6" required
                     class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md min-h-[150px]"></textarea>
                 </div>
-              </div>
-            </div>
-          </div>
+                        </div>
+                        </div>
+                    </div>
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
               <i class="fas fa-save mr-2"></i> Simpan Perubahan
@@ -222,11 +222,11 @@
             <button @click="showEditModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
               Batal
             </button>
-          </div>
-        </form>
-      </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
   <!-- Import Modal -->
   <div x-show="showImportModal" 
@@ -250,7 +250,7 @@
               <i class="fas fa-times"></i>
             </button>
           </div>
-        </div>
+                </div>
         <form action="{{ url_for('import_soal') }}" method="post" enctype="multipart/form-data">
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
             <div>
@@ -258,15 +258,15 @@
               <div class="mt-1">
                 <input type="file" id="file" name="file" accept=".xlsx" required
                   class="focus:ring-primary-500 focus:border-primary-500 block w-full text-sm border-gray-300 rounded-md">
-              </div>
+                        </div>
               <p class="mt-2 text-sm text-gray-500">
                 Pastikan format file sesuai. 
                 <a href="{{ url_for('download_template') }}" class="text-primary-600 hover:text-primary-500">
                   Download template <i class="fas fa-download"></i>
                 </a>
               </p>
-            </div>
-          </div>
+                        </div>
+                    </div>
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
               <i class="fas fa-upload mr-2"></i> Import
@@ -274,22 +274,22 @@
             <button @click="showImportModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
               Batal
             </button>
-          </div>
-        </form>
-      </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock %}
 
 {% block body_extra %}
-<script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Add loading indicator for form submission
   document.getElementById('addQuestionForm')?.addEventListener('submit', function() {
     showLoading('Menyimpan soal baru...');
     updateProgress(50);
-  });
-});
-</script>
+            });
+        });
+    </script>
 {% endblock %} 

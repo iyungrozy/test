@@ -3,19 +3,19 @@
 {% block title %}Kelola User{% endblock %}
 
 {% block head_extra %}
-<style>
+    <style>
   .user-card {
     @apply bg-white shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-all duration-200;
   }
   
-  .role-admin {
+        .role-admin {
     @apply text-red-600;
-  }
+        }
   
-  .role-siswa {
+        .role-siswa {
     @apply text-green-600;
-  }
-</style>
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -52,8 +52,8 @@
                  class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
                  placeholder="Cari username...">
         </div>
-      </div>
-      
+    </div>
+
       <!-- User cards grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% if users %}
@@ -77,7 +77,7 @@
                     " 
                     class="inline-flex items-center p-1.5 border border-transparent rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                     <i class="fas fa-edit"></i>
-                  </button>
+                </button>
                   <a href="{{ url_for('hapus_user', id=user.id) }}" 
                     class="inline-flex items-center p-1.5 border border-transparent rounded-md shadow-sm text-white {% if user.id == session.get('user_id') %}bg-gray-400 cursor-not-allowed{% else %}bg-red-600 hover:bg-red-700{% endif %}"
                     {% if user.id != session.get('user_id') %}
@@ -96,7 +96,7 @@
                   {% if user.id == session.get('user_id') %}
                   <p class="text-sm text-primary-600"><i class="fas fa-check-circle"></i> Akun Aktif</p>
                   {% endif %}
-                </div>
+                        </div>
                 {% if user.role == 'siswa' %}
                 <a href="#" class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                   <i class="fas fa-chart-line mr-1"></i> Lihat Hasil
@@ -105,7 +105,7 @@
               </div>
             </div>
           </div>
-          {% endfor %}
+                                {% endfor %}
         {% else %}
           <div class="col-span-3">
             <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
@@ -115,8 +115,8 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm text-blue-700">Belum ada user yang tersedia. Silakan tambahkan user baru.</p>
+                    </div>
                 </div>
-              </div>
             </div>
           </div>
         {% endif %}
@@ -158,9 +158,9 @@
                   </div>
                   <input type="text" id="username" name="username" required
                     class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md">
-                </div>
-              </div>
-              
+        </div>
+    </div>
+
               <div x-data="{ showPassword: false }">
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                 <div class="mt-1 relative rounded-md shadow-sm">
@@ -175,21 +175,21 @@
                     </button>
                   </div>
                 </div>
-              </div>
+                        </div>
               
               <div>
                 <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-user-tag text-gray-400"></i>
-                  </div>
+                        </div>
                   <select id="role" name="role" required
                     class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md">
-                    <option value="admin">Admin</option>
+                                <option value="admin">Admin</option>
                     <option value="siswa" selected>Siswa</option>
-                  </select>
-                </div>
-              </div>
+                            </select>
+                        </div>
+                    </div>
             </div>
           </div>
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -199,11 +199,11 @@
             <button @click="showAddModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
               Batal
             </button>
-          </div>
-        </form>
-      </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
   <!-- Edit User Modal -->
   <div x-show="showEditModal" 
@@ -258,21 +258,21 @@
                     </button>
                   </div>
                 </div>
-              </div>
+                        </div>
               
               <div>
                 <label for="edit_role" class="block text-sm font-medium text-gray-700">Role</label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-user-tag text-gray-400"></i>
-                  </div>
+                        </div>
                   <select x-model="role" id="edit_role" name="role" required
                     class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md">
                     <option value="admin">Admin</option>
-                    <option value="siswa">Siswa</option>
-                  </select>
-                </div>
-              </div>
+                                <option value="siswa">Siswa</option>
+                            </select>
+                        </div>
+                    </div>
             </div>
           </div>
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -282,16 +282,16 @@
             <button @click="showEditModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
               Batal
             </button>
-          </div>
-        </form>
-      </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock %}
 
 {% block body_extra %}
-<script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Add loading indicator for form submission
   document.getElementById('addUserForm')?.addEventListener('submit', function() {
@@ -307,5 +307,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-</script>
+    </script>
 {% endblock %} 
