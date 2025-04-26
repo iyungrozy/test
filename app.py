@@ -32,7 +32,7 @@ from nltk.corpus import stopwords
 # Inisialisasi Flask dan database
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'rahasia'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://mariadb:zafa@103.47.225.247:3307/sistem_penilaian'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://zafa:zafa@103.47.225.247/sistem_penilaian'
 db = SQLAlchemy(app)
 
 # Model database
