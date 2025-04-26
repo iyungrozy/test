@@ -13,9 +13,7 @@ import re
 import pandas as pd
 import io
 import os
-import json
 from werkzeug.utils import secure_filename
-import sqlalchemy
 
 # Download NLTK resources
 try:
@@ -31,30 +29,10 @@ except LookupError:
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
-# Config file path
-CONFIG_FILE = 'db_config.json'
-
-# Inisialisasi Flask 
+# Inisialisasi Flask dan database
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'rahasia'
-
-# Default to SQLite for initial startup
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///temp.db'
-app.config['DB_CONFIGURED'] = False
-
-# Check if configuration exists
-if os.path.exists(CONFIG_FILE):
-    try:
-        with open(CONFIG_FILE, 'r') as f:
-            config = json.load(f)
-            if all(k in config for k in ['host', 'port', 'user', 'password', 'database']):
-                mysql_uri = f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
-                app.config['SQLALCHEMY_DATABASE_URI'] = mysql_uri
-                app.config['DB_CONFIGURED'] = True
-    except Exception as e:
-        print(f"Error loading config: {e}")
-
-# Initialize SQLAlchemy extension - must be done ONLY ONCE
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/sistem_penilaian'
 db = SQLAlchemy(app)
 
 # Model database
@@ -83,30 +61,6 @@ class Jawaban(db.Model):
     user = db.relationship('User', backref='jawaban')
     soal = db.relationship('Soal', backref='jawaban')
 
-# Function to test database connection
-def test_db_connection(host, port, user, password, database):
-    try:
-        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}")
-        connection = engine.connect()
-        connection.close()
-        return True, "Connection successful"
-    except Exception as e:
-        return False, str(e)
-
-# Function to create database if it doesn't exist
-def create_database_if_not_exists(host, port, user, password, database):
-    try:
-        # Connect to MySQL server without specifying database
-        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user}:{password}@{host}:{port}")
-        connection = engine.connect()
-        
-        # Create database if it doesn't exist
-        connection.execute(sqlalchemy.text(f"CREATE DATABASE IF NOT EXISTS {database}"))
-        connection.close()
-        return True, "Database created or already exists"
-    except Exception as e:
-        return False, str(e)
-
 # Login decorator
 def login_required(f):
     @wraps(f)
@@ -132,121 +86,10 @@ def role_required(allowed_roles):
         return decorated_function
     return decorator
 
-# Database setup route
-@app.route("/setup", methods=["GET", "POST"])
-def setup():
-    # If already configured and admin exists, redirect to login
-    if app.config['DB_CONFIGURED']:
-        admin_exists = User.query.filter_by(role='admin').first()
-        if admin_exists:
-            return redirect(url_for('login'))
-    
-    if request.method == "POST":
-        host = request.form.get("host")
-        port = request.form.get("port")
-        user = request.form.get("user")
-        password = request.form.get("password")
-        database = request.form.get("database")
-        
-        # Validate inputs
-        if not all([host, port, user, database]):
-            flash('Semua field harus diisi kecuali password')
-            return render_template("setup.html")
-        
-        # Try to create database if it doesn't exist
-        db_created, message = create_database_if_not_exists(host, port, user, password, database)
-        if not db_created:
-            flash(f'Error creating database: {message}')
-            return render_template("setup.html")
-            
-        # Test connection
-        success, message = test_db_connection(host, port, user, password, database)
-        if success:
-            # Save configuration
-            config = {
-                'host': host,
-                'port': port,
-                'user': user,
-                'password': password,
-                'database': database
-            }
-            
-            with open(CONFIG_FILE, 'w') as f:
-                json.dump(config, f)
-            
-            # Update app configuration
-            mysql_uri = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
-            app.config['SQLALCHEMY_DATABASE_URI'] = mysql_uri
-            app.config['DB_CONFIGURED'] = True
-            
-            # Close any existing connections in the SQLAlchemy engine pool
-            db.engine.dispose()
-            
-            # Create tables in the new database
-            with app.app_context():
-                db.create_all()
-            
-            flash('Database configured successfully. Please create an admin account.')
-            return redirect(url_for('create_admin'))
-        else:
-            flash(f'Connection failed: {message}')
-    
-    return render_template("setup.html")
-
-# Admin creation route
-@app.route("/create_admin", methods=["GET", "POST"])
-def create_admin():
-    # Check if database is configured
-    if not app.config['DB_CONFIGURED']:
-        return redirect(url_for('setup'))
-    
-    # Check if admin already exists
-    admin_exists = User.query.filter_by(role='admin').first()
-    if admin_exists:
-        flash('Admin account already exists')
-        return redirect(url_for('login'))
-    
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        confirm_password = request.form.get("confirm_password")
-        
-        if not all([username, password, confirm_password]):
-            flash('All fields are required')
-            return render_template("create_admin.html")
-        
-        if password != confirm_password:
-            flash('Passwords do not match')
-            return render_template("create_admin.html")
-        
-        # Create admin account
-        admin = User(
-            username=username,
-            password=password,
-            role='admin'
-        )
-        
-        db.session.add(admin)
-        db.session.commit()
-        
-        flash('Admin account created successfully. Please login.')
-        return redirect(url_for('login'))
-    
-    return render_template("create_admin.html")
-
 # Login route
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Check if database is configured
-    if not app.config['DB_CONFIGURED']:
-        return redirect(url_for('setup'))
-    
-    # Check if admin exists
-    admin_exists = User.query.filter_by(role='admin').first()
-    if not admin_exists:
-        return redirect(url_for('create_admin'))
-        
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -730,11 +573,20 @@ def submit():
     nilai_akhir = total_nilai / len(soal_ujian)
     status = "Lulus" if nilai_akhir >= 75 else "Tidak Lulus"
     
-    # Get answer details with joined Soal data
-    jawaban_detail = db.session.query(Jawaban, Soal)\
-        .join(Soal, Jawaban.id_soal == Soal.id)\
-        .filter(Jawaban.id_user == session['user_id'])\
-        .all()
+    # Get answer details
+    jawaban_detail = (Jawaban.query
+        .filter_by(id_user=session['user_id'])
+        .join(Soal)
+        .add_columns(
+            Soal.pertanyaan,
+            Soal.kunci_jawaban,
+            Jawaban.jawaban_siswa,
+            Jawaban.skor_semantik,
+            Jawaban.skor_sintaksis,
+            Jawaban.skor_akhir,
+            Jawaban.status_akhir
+        )
+        .all())
     
     return render_template(
         "siswa.html", 

@@ -1,295 +1,403 @@
-{% extends "base.html" %}
-
-{% block title %}Admin Dashboard{% endblock %}
-
-{% block head_extra %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Sistem Penilaian Esai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
     <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background: #0d6efd;
+            padding: 20px;
+            z-index: 100;
+        }
+        .sidebar .logo {
+            color: white;
+            font-size: 24px;
+            text-decoration: none;
+            margin-bottom: 30px;
+            display: block;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
         .stat-card {
-    @apply bg-white rounded-lg shadow-sm overflow-hidden hover:-translate-y-1 transition-all duration-200;
-  }
-  
-  .stat-value {
-    @apply text-2xl font-bold;
-  }
-  
-  .stat-label {
-    @apply text-sm text-gray-500;
-  }
-  
-  .action-card {
-    @apply h-full bg-white rounded-lg shadow-sm overflow-hidden flex flex-col hover:-translate-y-1 transition-all duration-200;
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+            color: white;
+        }
+        .table-responsive {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .status-lulus {
+            background-color: #198754;
+            color: white;
+        }
+        .status-tidak-lulus {
+            background-color: #dc3545;
+            color: white;
+        }
+        .progress {
+            border-radius: 20px;
+            background-color: #f0f0f0;
+        }
+        .progress-bar {
+            border-radius: 20px;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        }
+        .card-body .table td {
+            padding: 1rem;
+        }
+        .collapse {
+            transition: all 0.3s ease;
+        }
+        .card-body .bg-light {
+            background-color: #f8f9fa !important;
+            border: 1px solid #e9ecef;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 100px;
         }
     </style>
-{% endblock %}
-
-{% block content %}
-<div x-data="{ showImportModal: false }">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">
-      <i class="fas fa-tachometer-alt mr-2 text-primary-500"></i> Dashboard Admin
-    </h1>
-    <p class="text-gray-600">Selamat datang, {{ session.get('username') }}! Kelola sistem penilaian essai dari sini.</p>
-  </div>
-
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <div class="stat-card">
-      <div class="bg-primary-600 px-4 py-5 sm:p-6">
-        <div class="flex items-center">
-          <div class="mr-4 bg-white bg-opacity-20 rounded-full p-3">
-            <i class="fas fa-users text-white"></i>
-          </div>
-          <div>
-            <div class="stat-value text-white" x-data="{ start: 0, end: {{ users|length }} }" 
-                x-init="
-                  $nextTick(() => {
-                    const duration = 1500;
-                    const interval = setInterval(() => {
-                      start = Math.min(Math.floor(start + (end / (duration / 20))), end);
-                      if (start >= end) clearInterval(interval);
-                    }, 20);
-                  });
-                "
-                x-text="start">0</div>
-            <div class="stat-label text-white text-opacity-80">Total User</div>
-          </div>
-        </div>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#" class="logo">
+            <i class='bx bx-brain'></i> CBT Admin
+        </a>
+        <div class="nav flex-column">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link active">
+                <i class='bx bx-home'></i> Dashboard
+            </a>
+            <a href="{{ url_for('kelola_soal') }}" class="nav-link">
+                <i class='bx bx-question-mark'></i> Kelola Soal
+            </a>
+            <a href="{{ url_for('kelola_user') }}" class="nav-link">
+                <i class='bx bx-user'></i> Kelola User
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-link text-danger">
+                <i class='bx bx-log-out'></i> Logout
+            </a>
         </div>
     </div>
 
-    <div class="stat-card">
-      <div class="bg-green-600 px-4 py-5 sm:p-6">
-        <div class="flex items-center">
-          <div class="mr-4 bg-white bg-opacity-20 rounded-full p-3">
-            <i class="fas fa-book text-white"></i>
-          </div>
-          <div>
-            <div class="stat-value text-white" x-data="{ start: 0, end: {{ soal|length }} }" 
-                x-init="
-                  $nextTick(() => {
-                    const duration = 1500;
-                    const interval = setInterval(() => {
-                      start = Math.min(Math.floor(start + (end / (duration / 20))), end);
-                      if (start >= end) clearInterval(interval);
-                    }, 20);
-                  });
-                "
-                x-text="start">0</div>
-            <div class="stat-label text-white text-opacity-80">Total Soal</div>
-          </div>
-                        </div>
-                    </div>
-                </div>
-    
-    <div class="stat-card">
-      <div class="bg-indigo-600 px-4 py-5 sm:p-6">
-        <div class="flex items-center">
-          <div class="mr-4 bg-white bg-opacity-20 rounded-full p-3">
-            <i class="fas fa-pen-alt text-white"></i>
-          </div>
-          <div>
-            <div class="stat-value text-white" x-data="{ start: 0, end: {{ jawaban|length }} }" 
-                x-init="
-                  $nextTick(() => {
-                    const duration = 1500;
-                    const interval = setInterval(() => {
-                      start = Math.min(Math.floor(start + (end / (duration / 20))), end);
-                      if (start >= end) clearInterval(interval);
-                    }, 20);
-                  });
-                "
-                x-text="start">0</div>
-            <div class="stat-label text-white text-opacity-80">Total Jawaban</div>
-                        </div>
-                    </div>
-                </div>
-                        </div>
-                    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Welcome Message -->
+            <h4 class="mb-4">Selamat Datang, {{ session['username'] }}!</h4>
 
-  <!-- Action Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="action-card">
-      <div class="p-6 flex-grow">
-        <div class="flex justify-center">
-          <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
-            <i class="fas fa-user-plus text-xl text-primary-600"></i>
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Siswa</h6>
+                            <h3 class="mb-0">{{ users|selectattr('role', 'equalto', 'siswa')|list|length }}</h3>
                         </div>
                     </div>
-        <h3 class="mt-4 text-center text-lg font-medium text-gray-900">Kelola User</h3>
-        <p class="mt-2 text-center text-sm text-gray-600">Tambah, edit, atau hapus user siswa dan admin</p>
-      </div>
-      <div class="px-6 pb-6">
-        <a href="{{ url_for('kelola_user') }}" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
-          <i class="fas fa-arrow-right mr-2"></i> Kelola User
-        </a>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Soal</h6>
+                            <h3 class="mb-0">{{ soal|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Rata-rata Nilai</h6>
+                            <h3 class="mb-0">
+                                {% set total = namespace(value=0, count=0) %}
+                                {% for j in jawaban %}
+                                    {% set total.value = total.value + j.skor_akhir %}
+                                    {% set total.count = total.count + 1 %}
+    {% endfor %}
+                                {{ "%.2f"|format(total.value / total.count if total.count > 0 else 0) }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Tingkat Kelulusan</h6>
+                            <h3 class="mb-0">
+                                {% set lulus = namespace(count=0) %}
+    {% for j in jawaban %}
+                                    {% if j.status_akhir == "Lulus" %}
+                                        {% set lulus.count = lulus.count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ "%.1f"|format(lulus.count / jawaban|length * 100 if jawaban|length > 0 else 0) }}%
+                            </h3>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-    <div class="action-card">
-      <div class="p-6 flex-grow">
-        <div class="flex justify-center">
-          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-            <i class="fas fa-question-circle text-xl text-green-600"></i>
+            <!-- Ringkasan Nilai Per Siswa -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Ringkasan Nilai Per Siswa</h5>
+                    <div class="table-responsive">
+                        <table id="nilaiSiswaTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nama Siswa</th>
+                                    <th>Jumlah Soal</th>
+                                    <th>Rata-rata Nilai</th>
+                                    <th>Status</th>
+                                    <th>Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users if user.role == 'siswa' %}
+                                    {% set stats = namespace(total=0, count=0) %}
+                                    {% for j in jawaban if j.user.id == user.id %}
+                                        {% set stats.total = stats.total + j.skor_akhir %}
+                                        {% set stats.count = stats.count + 1 %}
+                                    {% endfor %}
+                                    {% set rata_rata = stats.total / stats.count if stats.count > 0 else 0 %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ stats.count }}</td>
+                                        <td>{{ "%.2f"|format(rata_rata) }}</td>
+                                        <td>
+                                            <span class="status-badge {{ 'status-lulus' if rata_rata >= 75 else 'status-tidak-lulus' }}">
+                                                {{ "Lulus" if rata_rata >= 75 else "Tidak Lulus" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="filterByStudent('{{ user.username }}')">
+                                                <i class='bx bx-detail'></i> Detail
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-        </div>
-        <h3 class="mt-4 text-center text-lg font-medium text-gray-900">Kelola Soal</h3>
-        <p class="mt-2 text-center text-sm text-gray-600">Tambah, edit, atau hapus soal essai</p>
-      </div>
-      <div class="px-6 pb-6">
-        <a href="{{ url_for('kelola_soal') }}" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-          <i class="fas fa-arrow-right mr-2"></i> Kelola Soal
-        </a>
                 </div>
             </div>
 
-    <div class="action-card">
-      <div class="p-6 flex-grow">
-        <div class="flex justify-center">
-          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <i class="fas fa-file-import text-xl text-blue-600"></i>
-          </div>
-        </div>
-        <h3 class="mt-4 text-center text-lg font-medium text-gray-900">Import Soal</h3>
-        <p class="mt-2 text-center text-sm text-gray-600">Import soal dari file Excel</p>
+            <!-- Detail Jawaban Siswa -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">Detail Jawaban Siswa</h5>
+                        <button class="btn btn-outline-primary" onclick="showAllAnswers()">
+                            <i class='bx bx-show-alt'></i> Tampilkan Semua
+                        </button>
                     </div>
-      <div class="px-6 pb-6">
-        <button type="button" @click="showImportModal = true" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-          <i class="fas fa-upload mr-2"></i> Import Soal
+                    <div class="table-responsive">
+                        <table id="hasilTable" class="table table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th style="width: 15%">Nama Siswa</th>
+                                    <th style="width: 25%">Soal & Jawaban</th>
+                                    <th style="width: 15%">Skor Semantik</th>
+                                    <th style="width: 15%">Skor Sintaksis</th>
+                                    <th style="width: 15%">Skor Akhir</th>
+                                    <th style="width: 15%">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for j in jawaban %}
+                                <tr class="align-middle answer-row" data-student="{{ j.user.username }}">
+                                    <td class="fw-bold">{{ j.user.username }}</td>
+                                    <td>
+                                        <div class="d-grid">
+                                            <button class="btn btn-link text-decoration-none p-0 text-start" type="button" 
+                                                    data-bs-toggle="collapse" 
+                                                    data-bs-target="#detail{{ j.id }}" 
+                                                    aria-expanded="false">
+                                                <small class="text-muted">Klik untuk detail</small>
                                             </button>
                                         </div>
+                                        <div class="collapse mt-2" id="detail{{ j.id }}">
+                                            <div class="card card-body bg-light">
+                                                <div class="mb-3">
+                                                    <label class="fw-bold text-primary">Pertanyaan:</label>
+                                                    <p class="mb-2">{{ j.soal.pertanyaan }}</p>
                                                 </div>
-    
-    <div class="action-card">
-      <div class="p-6 flex-grow">
-        <div class="flex justify-center">
-          <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-            <i class="fas fa-file-export text-xl text-amber-600"></i>
+                                                <div>
+                                                    <label class="fw-bold text-success">Jawaban Siswa:</label>
+                                                    <p class="mb-0">{{ j.jawaban_siswa }}</p>
                                                 </div>
                                             </div>
-        <h3 class="mt-4 text-center text-lg font-medium text-gray-900">Export Soal</h3>
-        <p class="mt-2 text-center text-sm text-gray-600">Download soal dalam format Excel</p>
                                         </div>
-      <div class="px-6 pb-6">
-        <a href="{{ url_for('export_soal') }}" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700" data-loading="true" data-loading-message="Mengekspor soal...">
-          <i class="fas fa-download mr-2"></i> Export Soal
-        </a>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 25px">
+                                            <div class="progress-bar bg-info" role="progressbar" 
+                                                style="width: {{ j.skor_semantik }}%" 
+                                                aria-valuenow="{{ j.skor_semantik }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ "%.1f"|format(j.skor_semantik) }}%
                                             </div>
                                         </div>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 25px">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                style="width: {{ j.skor_sintaksis }}%" 
+                                                aria-valuenow="{{ j.skor_sintaksis }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ "%.1f"|format(j.skor_sintaksis) }}%
                                             </div>
-
-  <!-- Recent Results -->
-  <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
-      <h3 class="text-lg font-medium leading-6 text-gray-900 flex items-center">
-        <i class="fas fa-chart-bar text-primary-600 mr-2"></i>
-        Hasil Penilaian Terbaru
-      </h3>
                                         </div>
-    <div class="px-4 py-5 sm:p-6">
-      {% if jawaban %}
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Soal</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor Semantik</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor Sintaksis</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor Akhir</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for j in jawaban[-10:]|reverse %}
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ j.user.username }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ j.soal.pertanyaan[:30] }}...</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ j.skor_semantik|round(2) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ j.skor_sintaksis|round(2) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ j.skor_akhir|round(2) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                {% if j.status_akhir == 'Lulus' %}
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  {{ j.status_akhir }}
-                </span>
-                {% else %}
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 25px">
+                                            <div class="progress-bar {{ 'bg-success' if j.skor_akhir >= 75 else 'bg-danger' }}" 
+                                                role="progressbar" 
+                                                style="width: {{ j.skor_akhir }}%" 
+                                                aria-valuenow="{{ j.skor_akhir }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ "%.1f"|format(j.skor_akhir) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge {{ 'status-lulus' if j.status_akhir == 'Lulus' else 'status-tidak-lulus' }}">
                                             {{ j.status_akhir }}
                                         </span>
-                {% endif %}
                                     </td>
     </tr>
     {% endfor %}
                             </tbody>
   </table>
                     </div>
-      {% else %}
-      <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <i class="fas fa-info-circle text-blue-400"></i>
                 </div>
-          <div class="ml-3">
-            <p class="text-sm text-blue-700">Belum ada jawaban yang disubmit.</p>
+            </div>
+
+            <!-- Kelola Soal -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Kelola Soal</h5>
+                    <div>
+                        <a href="{{ url_for('export_soal') }}" class="btn btn-success">
+                            <i class="fas fa-file-export"></i> Export Soal
+                        </a>
+                        <a href="{{ url_for('download_template') }}" class="btn btn-info">
+                            <i class="fas fa-file-download"></i> Download Template
+                        </a>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                            <i class="fas fa-file-import"></i> Import Soal
+                        </button>
                     </div>
                 </div>
             </div>
-      {% endif %}
         </div>
     </div>
 
     <!-- Import Modal -->
-  <div x-show="showImportModal" 
-      class="fixed inset-0 overflow-y-auto z-50" 
-      x-transition:enter="transition ease-out duration-300"
-      x-transition:enter-start="opacity-0"
-      x-transition:enter-end="opacity-100"
-      x-transition:leave="transition ease-in duration-200"
-      x-transition:leave-start="opacity-100"
-      x-transition:leave-end="opacity-0"
-      aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="showImportModal = false"></div>
-
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-              <i class="fas fa-file-import text-blue-600"></i>
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Soal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Import Soal</h3>
-              <div class="mt-4">
-                <form action="{{ url_for('import_soal') }}" method="post" enctype="multipart/form-data">
-                  <div class="mb-4">
-                    <label for="file" class="block text-sm font-medium text-gray-700">File Excel (.xlsx)</label>
-                    <div class="mt-1 flex items-center">
-                      <input type="file" class="py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm" id="file" name="file" accept=".xlsx" required>
+                <form action="{{ url_for('import_soal') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Pilih File Excel (.xlsx)</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Pastikan format file sesuai dengan template yang disediakan.
+                            <a href="{{ url_for('download_template') }}" class="alert-link">Download template di sini</a>.
+                        </div>
                     </div>
-                    <p class="mt-2 text-sm text-gray-500">
-                      Pastikan format file sesuai. 
-                      <a href="{{ url_for('download_template') }}" class="text-primary-600 hover:text-primary-500">
-                        Download template <i class="fas fa-download"></i>
-                      </a>
-                    </p>
-                  </div>
-                  <div class="mt-6">
-                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm">
-                      <i class="fas fa-upload mr-2"></i> Import
-                    </button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-        </div>
-        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button type="button" @click="showImportModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-            Batal
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable for student summary
+            $('#nilaiSiswaTable').DataTable({
+                pageLength: 10,
+                order: [[2, 'desc']],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json'
+                }
+            });
+
+            // Initially show all answers
+            showAllAnswers();
+        });
+
+        function filterByStudent(username) {
+            $('.answer-row').hide();
+            $('.answer-row[data-student="' + username + '"]').show();
+            // Scroll to answers section
+            document.querySelector('#hasilTable').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showAllAnswers() {
+            $('.answer-row').show();
+        }
+    </script>
+</body>
+</html>
