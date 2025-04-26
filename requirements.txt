@@ -15,3 +15,4 @@ openpyxl==3.1.2
 # Machine learning - versi CPU untuk menghemat ukuran download
 torch==2.0.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 transformers==4.29.2
+distutils
