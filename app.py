@@ -730,20 +730,11 @@ def submit():
     nilai_akhir = total_nilai / len(soal_ujian)
     status = "Lulus" if nilai_akhir >= 75 else "Tidak Lulus"
     
-    # Get answer details
-    jawaban_detail = (Jawaban.query
-        .filter_by(id_user=session['user_id'])
-        .join(Soal)
-        .add_columns(
-            Soal.pertanyaan,
-            Soal.kunci_jawaban,
-            Jawaban.jawaban_siswa,
-            Jawaban.skor_semantik,
-            Jawaban.skor_sintaksis,
-            Jawaban.skor_akhir,
-            Jawaban.status_akhir
-        )
-        .all())
+    # Get answer details with joined Soal data
+    jawaban_detail = db.session.query(Jawaban, Soal)\
+        .join(Soal, Jawaban.id_soal == Soal.id)\
+        .filter(Jawaban.id_user == session['user_id'])\
+        .all()
     
     return render_template(
         "siswa.html", 
@@ -756,4 +747,4 @@ def submit():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Create tables if they don't exist
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=5003)
