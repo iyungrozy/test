@@ -160,9 +160,10 @@ def admin_dashboard():
     # Process jawaban to handle None values
     processed_jawaban = []
     for j in jawaban_semua:
-        j.skor_semantik = j.skor_semantik if j.skor_semantik is not None else 0
-        j.skor_sintaksis = j.skor_sintaksis if j.skor_sintaksis is not None else 0
-        j.skor_akhir = j.skor_akhir if j.skor_akhir is not None else 0
+        # Ensure all scores are initialized with 0 if None
+        j.skor_semantik = float(j.skor_semantik) if j.skor_semantik is not None else 0.0
+        j.skor_sintaksis = float(j.skor_sintaksis) if j.skor_sintaksis is not None else 0.0
+        j.skor_akhir = float(j.skor_akhir) if j.skor_akhir is not None else 0.0
         processed_jawaban.append(j)
     
     return render_template("admin_dashboard.html", 
