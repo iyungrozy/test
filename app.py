@@ -156,8 +156,17 @@ def admin_dashboard():
     jawaban_semua = Jawaban.query.all()
     soal_semua = Soal.query.all()
     users = User.query.all()
+    
+    # Process jawaban to handle None values
+    processed_jawaban = []
+    for j in jawaban_semua:
+        j.skor_semantik = j.skor_semantik if j.skor_semantik is not None else 0
+        j.skor_sintaksis = j.skor_sintaksis if j.skor_sintaksis is not None else 0
+        j.skor_akhir = j.skor_akhir if j.skor_akhir is not None else 0
+        processed_jawaban.append(j)
+    
     return render_template("admin_dashboard.html", 
-                         jawaban=jawaban_semua, 
+                         jawaban=processed_jawaban, 
                          soal=soal_semua,
                          users=users)
 
