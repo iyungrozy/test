@@ -556,11 +556,11 @@ def submit():
             # Apply bonus
             if 60 <= skor_akhir < 75:
                 if 70 <= skor_akhir < 75:
-                    skor_akhir += 7
+                    skor_akhir += 10
                 elif 65 <= skor_akhir < 70:
-                    skor_akhir += 5
+                    skor_akhir += 8
                 else:
-                    skor_akhir += 3
+                    skor_akhir += 5
             
             skor_akhir = min(100, skor_akhir)
             status = "Lulus" if skor_akhir >= 75 else "Tidak Lulus"
